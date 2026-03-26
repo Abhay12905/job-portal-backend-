@@ -1,28 +1,37 @@
 import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv";
 import multer from "multer";
-import CloudinaryStorage from "multer-storage-cloudinary";
+import  {CloudinaryStorage}  from "multer-storage-cloudinary";
+import dotenv from "dotenv"
 
-dotenv.config();
 
-// Cloudinary config
+
+dotenv.config({
+  path : "../../.env"
+})
+
+// console.log(process.env.CLOUD_NAME)
+
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
+  cloud_name: "dfuvyvhal",
+  api_key: "895576941282426",
+  api_secret: "jy2I47Uk_sLyAmpB4GS5lNp5nKg",
 });
 
-// Storage config
+
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-
+    console.log("running");
     return {
       folder: "profile",
-      format: file.mimetype.split("/")[1], // jpg/png/jpeg
-      public_id: `${Date.now()}-${file.originalname}`
+      format: file.mimetype.split("/")[1],
+      public_id: `${Date.now()}-${file.originalname}`,
     };
-  }
+  },
 });
 
-export const upload = multer({ storage });
+export const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+

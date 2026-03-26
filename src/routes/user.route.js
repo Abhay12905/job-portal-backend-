@@ -19,5 +19,5 @@ userRouter.post("/login",asyncHandler(loginUser))
 
 userRouter.post("/refreshToken", asyncHandler(RefershToken))
 
-userRouter.post("/test",authCheck,roleCheck("employee","admin"),asyncHandler(testController))
+userRouter.post("/test",authCheck,roleCheck("employee","admin","employer"),asyncHandler(testController))
 

@@ -32,13 +32,18 @@ app.use("/api/user", userRouter);
 
 app.use("/api/job", jobRoute);
 
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  console.log(req.file);
+app.post("/api/upload", upload.single("file"), (req, res)=>{
+  console.log("FILE:", req.file);
+
+  if (!req.file) {
+    return res.status(400).json({ message: "No file received" });
+  }
 
   res.json({
-    message: "File uploaded successfully"});
+    message: "File uploaded successfully",
+    url: req.file.path   // 🔥 important
+  });
 });
-
 
 
 // Error Handler

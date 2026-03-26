@@ -205,7 +205,7 @@ const RefershToken = async (req, res) => {
       "abh",
       { expiresIn: "15m" }
     );
-
+    console.log(newAccessToken)
     res.setHeader("Authorization", `Bearer ${newAccessToken}`);
 
     return res.json({ message: "New Access Token" });
