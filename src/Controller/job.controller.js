@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+
 import { Job } from "../Models/job.schema.js";
 import User from "../Models/user.schema.js";
 import { CustomError } from "../Utils/CustomError.js";
