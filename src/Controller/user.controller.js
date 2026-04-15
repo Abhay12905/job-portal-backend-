@@ -46,15 +46,8 @@ const createUser = async (req, res) => {
       "OTP Verification",
       otptemplate.replace("{otp}", OTP)
     );
-
-    // res.status(201).json({
-    //   success: true,
-    //   msg: "User registered successfully. Please verify OTP.",
-    // });
-
+    
     successhandler(res,201,"success","success","User registered successfully. Please verify OTP ")
-
-
 
   } catch (error) {
     res.status(error.statusCode || 500).json({
@@ -126,8 +119,8 @@ const OtpVerify = async (req, res) => {
     throw new CustomError(404, "Email does not exist");
   }
 
-  console.log("DB OTP:", existingUser.otp);
-  console.log("Entered OTP:", OTP);
+  // console.log("DB OTP:", existingUser.otp);
+  // console.log("Entered OTP:", OTP);
 
   if (String(existingUser.otp) !== String(OTP)) {
     throw new CustomError(400, "OTP is wrong");
@@ -189,7 +182,7 @@ const loginUser = async (req, res) => {
 };
 
 // 
-const RefershToken = async (req, res) => {
+const RefershToken = async (req, res) => {  
 
   const token = req.cookies.refreshToken;
 
