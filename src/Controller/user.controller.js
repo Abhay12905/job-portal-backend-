@@ -138,49 +138,52 @@ const OtpVerify = async (req, res) => {
 // Login User
 
 const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+
+    const payload = {
+      id: user._id,
+      role: user.role,
+    };
+
+    // Use environment variables for secrets instead of hardcoded strings
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET || "abh", { expiresIn: "15m" });
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_SECRET || "def", { expiresIn: "1h" });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Better for deployment
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000
+    });
+
+    res.setHeader("Authorization", `Bearer ${accessToken}`);
+
+    return res.status(200).json({
+      message: "Login Successful",
+      user: { id: user._id, role: user.role, name: user.name } // Send basic info back
+    });
+  } catch (error) {
+    console.error("LOGIN ERROR:", error); // This will finally show in Render logs
+    return res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
-
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    return res.status(400).json({ message: "Incorrect password" });
-  }
-
-  const payload = {
-    id: user._id,
-    role: user.role,
-  };
-
-  const accessToken = jwt.sign(payload, "abh", { expiresIn: "15m" });
-  const refreshToken = jwt.sign(payload, "def", { expiresIn: "1h" });
-
-  console.log(accessToken)
-  // ✅ store refresh token in cookie
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 1000
-  });
-
-  // ✅ send access token in header
-  res.setHeader("Authorization", `Bearer ${accessToken}`);
-
-  return res.status(200).json({
-    message: "Login Successful"
-  });
 };
-
 // 
 const RefershToken = async (req, res) => {  
 
