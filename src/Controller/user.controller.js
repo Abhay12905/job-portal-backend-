@@ -147,8 +147,8 @@ const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!user || !user.password) {
+      return res.status(404).json({ message: "User not found or invalid data" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -162,26 +162,44 @@ const loginUser = async (req, res) => {
       role: user.role,
     };
 
-    // Use environment variables for secrets instead of hardcoded strings
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET || "abh", { expiresIn: "15m" });
-    const refreshToken = jwt.sign(payload, process.env.REFRESH_SECRET || "def", { expiresIn: "1h" });
+    // ✅ Ensure secrets exist
+    if (!process.env.JWT_SECRET || !process.env.REFRESH_SECRET) {
+      throw new Error("JWT secrets are missing in environment variables");
+    }
+
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_SECRET, {
+      expiresIn: "1h",
+    });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Better for deployment
-      sameSite: "lax",
-      maxAge: 60 * 60 * 1000
+      secure: true, // ✅ REQUIRED on Render (HTTPS)
+      sameSite: "none", // ✅ REQUIRED for cross-origin cookies
+      maxAge: 60 * 60 * 1000,
     });
 
     res.setHeader("Authorization", `Bearer ${accessToken}`);
 
     return res.status(200).json({
       message: "Login Successful",
-      user: { id: user._id, role: user.role, name: user.name } // Send basic info back
+      accessToken, // ✅ ALSO send token in body (important fix)
+      user: {
+        id: user._id,
+        role: user.role,
+        name: user.name,
+      },
     });
+
   } catch (error) {
-    console.error("LOGIN ERROR:", error); // This will finally show in Render logs
-    return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    console.error("LOGIN ERROR:", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
 // 
