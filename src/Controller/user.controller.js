@@ -67,42 +67,6 @@ const getAllUser = async(req,res) => {
     }
 }
 
-// Delete
-const deleteuser = async (req, res) => {
-try{
-
-  const { id } = req.params;
-  
-  if(!id) {
-    return res.status(404).json({ message: "User id is requried " });
-  }
-  const dltuser = await User.findByIdAndDelete(id);
-  
-  res.json({dltuser});
-}catch(error){
-  res.status(500).json({error})
-}
-
-  } 
-
-//   update api
-const updateUser = async(req,res)=>{
-  try{
-
-    const {id} = req.params;
-    const {name,email,password,phone} = req.body;
-    
-    const updateduser = await User.findByIdAndUpdate(id,{
-      name,
-      email,
-      password,
-      phone
-    })
-    res.json({message:"user detail updated successfully"})
-  }catch(error){
-    res.json(error)
-  }
-}
 
 //OTP verify
 
@@ -204,7 +168,6 @@ const loginUser = async (req, res) => {
 };
 // 
 const RefershToken = async (req, res) => {  
-
   const token = req.cookies.refreshToken;
 
   if (!token) {
@@ -212,20 +175,23 @@ const RefershToken = async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, "def");
+    const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
 
     const newAccessToken = jwt.sign(
       { id: decoded.id, role: decoded.role },
-      "abh",
+      process.env.JWT_SECRET,
       { expiresIn: "15m" }
     );
-    console.log(newAccessToken)
+
+    // ✅ Send BOTH ways (important)
     res.setHeader("Authorization", `Bearer ${newAccessToken}`);
 
-    return res.json({ message: "New Access Token" });
+    return res.json({
+      message: "New Access Token",
+      accessToken: newAccessToken
+    });
 
   } catch (err) {
-
     res.clearCookie("refreshToken");
 
     return res.status(401).json({
@@ -233,7 +199,6 @@ const RefershToken = async (req, res) => {
     });
   }
 };
-
 // 
 const testController = async(req,res)=>{
   console.log(req.user)
@@ -264,5 +229,5 @@ const fileuploadcontroller = async(req,res)=>{
 }
 
 
-export {createUser, getAllUser , deleteuser , updateUser , loginUser , testController ,OtpVerify, RefershToken};
+export {createUser, getAllUser , loginUser , testController ,OtpVerify, RefershToken};
  

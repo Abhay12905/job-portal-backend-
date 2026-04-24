@@ -1,23 +1,19 @@
 import express from "express"
 import asyncHandler from "../Middleware/asyncHandler.js"
 import { authCheck } from "../Middleware/authCheck.js"
-import {createUser, getAllUser , deleteuser ,updateUser , loginUser , testController ,OtpVerify ,RefershToken} from "../Controller/user.controller.js"
+import {createUser, getAllUser, loginUser , testController ,OtpVerify ,RefershToken} from "../Controller/user.controller.js"
 import { roleCheck } from "../Middleware/roleCheck.js"
-export const userRouter = express.Router()
+export const userRoutes = express.Router()
 
-userRouter.post("/createUser",asyncHandler(createUser))
+userRoutes.post("/createUser",asyncHandler(createUser))
 
-userRouter.get("/getallusers",asyncHandler(getAllUser))
+userRoutes.get("/getallusers",asyncHandler(getAllUser))
 
-// userRouter.delete("/deleteuser/:id",asyncHandler(deleteuser))
+userRoutes.post("/OtpVerify",asyncHandler(OtpVerify))
 
-// userRouter.patch("/updateUser/:id",asyncHandler(updateUser))
+userRoutes.post("/login",asyncHandler(loginUser))
 
-userRouter.post("/OtpVerify",asyncHandler(OtpVerify))
+userRoutes.post("/refreshToken", asyncHandler(RefershToken))
 
-userRouter.post("/login",asyncHandler(loginUser))
-
-userRouter.post("/refreshToken", asyncHandler(RefershToken))
-
-userRouter.post("/test",authCheck,roleCheck("employee","admin","employer"),asyncHandler(testController))
+userRoutes.post("/test",authCheck,roleCheck("employee","admin","employer"),asyncHandler(testController))
 
